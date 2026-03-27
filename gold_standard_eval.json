@@ -1,0 +1,14 @@
+[
+  {
+    "perturbation": "TP53 Knockout",
+    "expected_biological_reasoning": "Downregulation of DNA repair pathways; increased genomic instability markers."
+  },
+  {
+    "perturbation": "MYC Activation",
+    "expected_biological_reasoning": "Rapid upregulation of ribosomal biogenesis and metabolic genes."
+  },
+  {
+    "perturbation": "FOXP3 Knockout",
+    "expected_biological_reasoning": "Loss of suppressive function and a transition toward a Th1/Th17-like phenotype, with an upregulation of IFNG and IL17A expression."
+  }
+]
