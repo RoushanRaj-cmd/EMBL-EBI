@@ -4,6 +4,24 @@ import pandas as pd
 import numpy as np
 import os
 from PIL import Image
+import subprocess
+import sys
+
+# --- SELF-BOOTSTRAPPING ---
+# Ensure mock data and images exist for Streamlit Cloud deployment
+@st.cache_resource
+def bootstrap():
+    # Streamlit Cloud uses 'python' or sys.executable
+    py_exec = sys.executable
+    if not os.path.exists("sample_perturb.h5ad"):
+        st.info("Bootstrapping mock biological data...")
+        subprocess.run([py_exec, "generate_mock_data.py"])
+    if not os.path.exists("graphs_and_images/umap_perturbations.png"):
+        st.info("Generating premium visualizations...")
+        os.makedirs("graphs_and_images", exist_ok=True)
+        subprocess.run([py_exec, "visualize_poc.py"])
+
+bootstrap()
 
 # --- PAGE CONFIGURATION ---
 st.set_page_config(
