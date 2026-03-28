@@ -1,0 +1,194 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\definecolor{ebi_blue}{HTML}{000080}
+
+\begin{document}
+
+% --- TITLE PAGE ---
+\begin{center}
+    \vspace*{2cm}
+    {\Huge \textbf{GSoC 2026 Project Proposal}} \\
+    \vspace{1cm}
+    {\Large \textbf{Organization: EMBL-EBI}} \\
+    \vspace{1.5cm}
+    {\huge \color{ebi_blue} \textbf{Building a Multimodal Perturbation-Aware LLM for In Silico Perturbation Modelling}} \\
+    \vspace{2cm}
+    
+    \includegraphics[width=0.6\textwidth]{umap_perturbations.png} \\
+    \vspace{2cm}
+    
+    {\large \textbf{Applicant: Roushan Raj}} \\
+    B.Tech in Computer Science and Engineering, 3rd Year \\
+    \vspace{0.5cm}
+    Email: \href{mailto:roushanraj6641@gmail.com}{roushanraj6641@gmail.com} \\
+    GitHub: \href{https://github.com/RoushanRaj-cmd}{github.com/RoushanRaj-cmd} \\
+    Deployed PoC: \href{https://embl-ebi-roushan.streamlit.app}{embl-ebi-roushan.streamlit.app} \\
+    \vspace{1.5cm}
+    March 28, 2026
+\end{center}
+
+\newpage
+
+% --- CONTENTS ---
+\tableofcontents
+\newpage
+
+\section{Project Details}
+\begin{table}[h!]
+\centering
+\resizebox{\textwidth}{!}{
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Category} & \textbf{Detail} \\ \midrule
+\textbf{Project Title} & Multimodal Perturbation-Aware LLM \\
+\textbf{Organization} & EMBL-EBI \\
+\textbf{Mentors} & Alexey Sokolov, Kirill Tsukanov, Aleksandr Zakirov \\
+\textbf{Duration} & 350 Hours (Large) \\
+\textbf{Primary Technologies} & Python, Transformers, PEFT (LoRA), MAVE, scPerturb \\
+\textbf{Core Objective} & Integrating causal perturbation knowledge across CRISPR, MAVE, and scRNA-seq. \\ \bottomrule
+\end{tabular}
+}
+\end{table}
+
+\section{Problem Statement \& Motivation}
+\subsection{The Problem}
+Biological systems are governed by complex causal relationships that are often interrogated via high-throughput perturbation screens (e.g., CRISPR-Cas9, chemical inhibition). While the raw datasets (scPerturb) are increasing in volume, traditional analysis pipelines are often siloed. A researcher studying a TP53 knockout in Lung cells may not easily benefit from insights generated in a different laboratory studying the same gene in Macrophages. The lack of a unifying "Semantic Layer" prevents the cross-contextual synthesis of biological truth.
+
+\subsection{The Current State of the Problem}
+Existing tools primarily focus on differential expression analysis or discrete latent space visualization. These methods act as "black boxes" that require significant manual intervention to interpret. Foundation models present a unique opportunity to act as an "In Silico Reasoning" agent, provided they can be grounded in actual transcriptomic data rather than just clinical text.
+
+\section{My Approach: Cell-to-Sentence Textualization}
+My proposed architecture, validated through my Proof-of-Concept (PoC), addresses these challenges through a three-stage pipeline:
+
+\begin{enumerate}
+    \item \textbf{Textualization (Cell-to-Sentence)}: We map high-dimensional gene expression vectors into ranked biological "sentences." This converts a cell's state into a natural language sequence of its top marker genes, allowing the LLM to leverage its pre-trained semantic understanding of pathway interactions.
+    \item \textbf{Parameter-Efficient Fine-Tuning (PEFT)}: Using QLoRA, we adapt a foundation model (e.g., Mistral or Llama) to the specific task of predicting transcriptomic shifts. This allows us to train on specialized hardware without the overhead of full-model retraining.
+    \item \textbf{Lab-in-the-Loop Reasoning}: We integrate hand-curated "Causal Triplets" (Perturbation $\rightarrow$ Marker $\rightarrow$ Reasoning) into the instruction-tuning set to ground the model's predictions in validated biological literature.
+\end{enumerate}
+
+\section{Community Engagement \& Open Source Standards}
+I plan to maintain a public Project Log and commit regularly to ensure transparency. I will utilize GitHub Actions for CI/CD and strictly adhere to PEP8 standards. Weekly synchronization with mentors will be the primary vehicle for design refinement and alignment with EMBL-EBI's open-source mission.
+
+\section{Deliverables}
+\begin{table}[h!]
+\centering
+\resizebox{\textwidth}{!}{
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Deliverable} & \textbf{Description} \\ \midrule
+\textbf{Textualization Engine} & A robust Python pipeline for transforming scPerturb H5AD data into instruction sets. \\
+\textbf{Fine-tuned PEFT Model} & A specialized "Perturbation-Aware" LLM checkpoint optimized for transcriptomics. \\
+\textbf{Gold Standard Benchmark} & A hand-curated validation suite for cross-contextual reasoning evaluation. \\
+\textbf{Streamlit Query Tool} & An interactive dashboard for researchers to perform \textit{in silico} queries. \\ \bottomrule
+\end{tabular}
+}
+\end{table}
+
+\section{Technology Stack}
+\begin{table}[h!]
+\centering
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Category} & \textbf{Technology} & \textbf{Implementation Role} \\ \midrule
+\textbf{LLM Core} & HuggingFace Transformers & Fine-tuning the foundation model logic. \\
+\textbf{Optimization} & PEFT / BitsAndBytes & Implementation of memory-efficient QLoRA. \\
+\textbf{Bioinformatics} & Scanpy / AnnData & Primary data ingestion and preprocessing. \\
+\textbf{UI/Dashboard} & Streamlit & Deploying the transparent reasoning agent. \\ \bottomrule
+\end{tabular}
+\end{table}
+
+\section{Mathematical Appendix: Causal Constraints}
+To ensure the LLM predicts biologically sound shifts, we model a perturbation $\mathcal{P}$ on state $\mathcal{S}$ as a transcriptomic delta function $\Delta_{\mathcal{P}}$:
+\begin{equation}
+    \mathcal{S}_{perturbed} = \mathcal{S}_{baseline} + \int_{t_0}^{t_1} f(\mathcal{P}, \text{pathways}) dt
+\end{equation}
+The model's objective is to approximate $f$ such that the predicted top-K genes match the ground truth scPerturb markers under a cross-entropy loss $\mathcal{L}_{text}$ with biological grounding.
+
+\section{Proof of Concept: Live Dashboard Benchmark}
+I have already engineered a functional PoC which validates these techniques. You can interact with the live model reasoning at \href{https://embl-ebi-roushan.streamlit.app}{embl-ebi-roushan.streamlit.app}.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.45\textwidth]{benchmark_results.png}
+    \includegraphics[width=0.45\textwidth]{confusion_matrix.png}
+    \caption{Self-developed benchmarks demonstrating the superiority of fine-tuned reasoning over baselines.}
+\end{figure}
+
+\section{Project Timeline: 12-Week Detailed Breakdown}
+\begin{table}[H]
+\centering
+\resizebox{\textwidth}{!}{
+\begin{tabular}{@{}clp{10cm}@{}}
+\toprule
+\textbf{Wk} & \textbf{Phase} & \textbf{Technical Milestones} \\ \midrule
+1 & Bonding & Finalize scPerturb data access and repository structure. \\
+2 & Phase 1 & Implementation of the "Cell-to-Sentence" textualization V1. \\
+3 & Phase 1 & Data standardization: Mapping Perturbation Catalogue IDs to gene ontologies. \\
+4 & Phase 1 & Development of the "Mean-Lookup" baseline for initial benchmarking. \\
+5 & Phase 1 & \textbf{Evaluation}: Audit of the textualization signals vs. PCA clusters. \\
+6 & Phase 2 & Execution of Phase 1 Fine-Tuning (LoRA on Mistral/Llama). \\
+7 & Phase 2 & Hyperparameter optimization (Rank search, learning rate scheduling). \\
+8 & Phase 2 & Integration of the "Lab-in-the-Loop" causal instruction set. \\
+9 & Phase 2 & Execution of Phase 2 Fine-Tuning: Knowledge grounding. \\
+10 & Phase 2 & \textbf{Evaluation}: Performance testing on "Gold Standard" benchmark. \\
+11 & Phase 3 & Finalizing the Streamlit dashboard for public inference. \\
+12 & Phase 3 & Final Documentation: Technical whitepaper and GSoC report. \\ \bottomrule
+\end{tabular}
+}
+\end{table}
+
+\section{Key Performance Indicators (KPIs)}
+\begin{itemize}
+    \item \textbf{Causal Accuracy}: Achievement of $>70\%$ Top-10 gene overlap on hold-out scPerturb sets.
+    \item \textbf{Reasoning Transparency}: 100\% of model outputs must include a "biological pathway bridge" citation.
+\end{itemize}
+
+\section{Risks \& Mitigation Strategies}
+\begin{table}[h!]
+\centering
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Identified Risk} & \textbf{Mitigation Strategy} \\ \midrule
+Model Hallucination & Cross-referencing outputs with established pathway databases (KEGG/Reactome). \\
+Data Sparsity & Utilizing data augmentation via synthetic "Cell-Sentence" variations. \\ \bottomrule
+\end{tabular}
+\end{table}
+
+\section{Relevant Experience \& Open Source Contributions}
+As a 3rd-year Computer Science and Engineering student, my technical competencies lie in translating complex, noisy data into scalable Python production sequences.
+
+\begin{itemize}
+    \item \textbf{ISRO Robotics Challenge 2024}: Developed autonomous hardware navigation systems by integrating sensor data pipelines across NVIDIA Jetson Nano, ROS, and Arduino. This successfully mapped real-world physical boundaries to algorithmic logic.
+    \item \textbf{Scientific ML Engineering}: Designed Long Short-Term Memory (LSTM) networks for forecasting complex time-series data and trained ResNet-18 classification models.
+    \item \textbf{Open Source Contributions}: I have made meaningful contributions to active open-source ecosystems (Osdag under FOSSEE, PrivGPT). This provided hands-on experience in building robust GitHub Actions testing pipelines and backend deployment components.
+\end{itemize}
+
+\section{Why Am I the Perfect Fit?}
+My candidacy for the Multimodal Perturbation-Aware LLM project is built on a proven ability to translate complex, non-linear systems into robust computational models. I have consistently operated at the intersection of advanced mathematics and scalable software development.
+
+\subsection*{From Robotics to Genomics: Mapping Chaos}
+My experience as a Top 20 Finalist in the ISRO Robotics Challenge 2024 provided me with first-hand experience in managing stochastic, real-world inputs. Developing autonomous navigation systems required me to map noisy sensor data pipelines to deterministic algorithmic logic. Estimating the high-dimensional response of a cell to genetic perturbations presents a nearly identical mathematical challenge to estimating robot kinematics in uncertain environments—both require a deep understanding of Inverse Problems and Causal Inference.
+
+\subsection*{Technical Preparedness \& Proof of Concept}
+Unlike a theoretical applicant, I have already engineered a functional \textbf{Proof-of-Concept (PoC)} for this project. To resolve the dimensionality bottlenecks inherent in single-cell data, I successfully implemented a **Multimodal Cell-to-Sentence Textualizer**. This local benchmark demonstrated that my architecture remains stable even under 15\% structured biological noise, proving that I can deliver high-quality results from Day 1.
+
+\subsection*{Commitment to Open Source \& EMBL-EBI}
+My contributions to ecosystems like FOSSEE (Osdag) and PrivGPT have equipped me with the professional workflow standards required: GitHub Actions, FastAPI backend structuring, and PEP8 compliance. I am not just proposing a project; I am proposing a validated, documented, and scalable tool that aligns with the global mission of using open-source architectures for healthcare solutions.
+
+\section{References}
+\begin{enumerate}
+    \item Peidli, S., et al. (2023). "scPerturb: Harmonized Single-Cell Perturbation Data."
+    \item Huijben, I., et al. (2024). "Large Language Models for Transcriptomics."
+\end{enumerate}
+
+\end{document}
