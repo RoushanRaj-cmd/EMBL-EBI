@@ -16,6 +16,9 @@ def bootstrap():
     if not os.path.exists("sample_perturb.h5ad"):
         st.info("Bootstrapping mock biological data...")
         subprocess.run([py_exec, "generate_mock_data.py"])
+    if not os.path.exists("mock_mave_data.csv"):
+        st.info("Bootstrapping multimodal MAVE data...")
+        subprocess.run([py_exec, "generate_mave_data.py"])
     if not os.path.exists("graphs_and_images/umap_perturbations.png"):
         st.info("Generating premium visualizations...")
         os.makedirs("graphs_and_images", exist_ok=True)
@@ -53,7 +56,7 @@ st.markdown("""
 # --- SIDEBAR NAVIGATION ---
 with st.sidebar:
     st.title("🧬 GSoC 2026 PoC")
-    st.subheader("Perturbation-Aware LLM")
+    st.subheader("Multimodal Perturbation-Aware LLM")
     st.write("EMBL-EBI Lab-in-the-Loop")
     
     navigation = st.radio(
@@ -90,15 +93,27 @@ if navigation == "Dashboard Overview":
             st.warning("Marker visual not found. Run visualize_poc.py first.")
 
     st.divider()
-    st.subheader("Dataset Summary")
-    if os.path.exists("sample_perturb.h5ad"):
-        adata = sc.read_h5ad("sample_perturb.h5ad")
-        st.write(f"**Total Cells:** {adata.n_obs}")
-        st.write(f"**Total Genes:** {adata.n_vars}")
-        st.write("**Conditions:**", ", ".join(adata.obs['condition'].unique()))
-        st.write("**Cell Types:**", ", ".join(adata.obs['cell_type'].unique()))
-    else:
-        st.error("Mock dataset (sample_perturb.h5ad) not found. Run generate_mock_data.py.")
+    st.subheader("Multimodal Dataset Summary")
+    
+    tab1, tab2 = st.tabs(["scPerturb-seq (Single-Cell)", "MAVE (Variant Effects)"])
+    
+    with tab1:
+        if os.path.exists("sample_perturb.h5ad"):
+            adata = sc.read_h5ad("sample_perturb.h5ad")
+            st.write(f"**Total Cells:** {adata.n_obs}")
+            st.write(f"**Total Genes:** {adata.n_vars}")
+            st.write("**Conditions:**", ", ".join(adata.obs['condition'].unique()))
+            st.write("**Cell Types:**", ", ".join(adata.obs['cell_type'].unique()))
+        else:
+            st.error("Mock dataset (sample_perturb.h5ad) not found.")
+
+    with tab2:
+        if os.path.exists("mock_mave_data.csv"):
+            mave_df = pd.read_csv("mock_mave_data.csv")
+            st.write(f"**Total Variants:** {len(mave_df)}")
+            st.dataframe(mave_df, hide_index=True)
+        else:
+            st.error("MAVE dataset (mock_mave_data.csv) not found.")
 
 # --- IN SILICO QUERY TOOL ---
 elif navigation == "In Silico Query Tool":
