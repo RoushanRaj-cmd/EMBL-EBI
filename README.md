@@ -30,10 +30,25 @@ python generate_mock_data.py
 ```
 
 ### 2. The "Textualization" Script
-This script takes an `.h5ad` single-cell file and transforms it into an instruction-tuning format suitable for LLMs. It converts the gene expression values into a "Cell Sentence" (a ranked list of genes).
+This script takes an `.h5ad` single-cell file and transforms it into an instruction-tuning format. It converts expression values into a "Cell Sentence."
+Visualizations are saved in the `graphs_and_images/` directory.
 ```bash
+python visualize_poc.py
 python data_to_prompt.py
 ```
 
-### 3. Virtual Cell Reasoning Test
-The `gold_standard_eval.json` includes early benchmarks (ground truth) that map specific perturbations (e.g. TP53 Knockout or MYC Activation) to their expected biological responses, representing a rudimentary validation benchmark.
+### 3. Streamlit Dashboard (Interactive PoC)
+A professional web interface for biological exploration and in silico perturbation predictions.
+```bash
+streamlit run app.py
+```
+
+### 4. Virtual Cell Reasoning Test
+The `gold_standard_eval.json` includes early benchmarks (ground truth) mapping perturbations to expected biological responses.
+
+## Project Structure
+- `app.py`: Streamlit Dashboard implementation.
+- `visualize_poc.py`: Generates UMAP, DotPlot, benchmarks, and confusion matrices.
+- `data_to_prompt.py`: Textualization pipeline logic.
+- `generate_mock_data.py`: Utility to generate dummy biological data.
+- `graphs_and_images/`: Local storage for generated visual assets.
