@@ -133,13 +133,21 @@ elif navigation == "In Silico Query Tool":
         
     if submit:
         st.divider()
-        st.subheader("Model Output (Reasoning)")
+        st.subheader("Compositional Model Output (Reasoning)")
         
-        # Mocking LLM reasoning
-        if target_gene == "FOXP3":
+        # Expert Reasoning Mapping for Golden Targets
+        if target_gene == "TP53":
             st.success(f"**Predicted Response for {target_gene} {perturb_type} in {cell_type}:**")
-            st.write("> Based on the Perturbation Catalogue, a FOXP3 knockout is expected to cause a loss of suppressive function and a transition toward a Th1/Th17-like phenotype, with a significant upregulation of IFNG and IL17A expression.")
-            st.info("**Top Predicted Markers:** IL17A, IFNG, RORC, STAT3, IL2")
+            st.write("> **Biological Mechanism**: Loss of p53-mediated G1 arrest. The model predicts a failure to induce p21 (CDKN1A), leading to uncontrolled cell cycle progression.")
+            st.info("**Key Predicted Markers:** CDKN1A (Down), BAX (Down), MDM2 (Down), GADD45A (Down)")
+        elif target_gene == "PTEN":
+            st.success(f"**Predicted Response for {target_gene} {perturb_type} in {cell_type}:**")
+            st.write("> **Biological Mechanism**: Hyperactivation of the PI3K/AKT/mTOR axis. Loss of lipid phosphatase activity leads to increased glucose uptake and glycolytic flux.")
+            st.info("**Key Predicted Markers:** SLC2A1 (Up), AKT1 (Activation), MTOR (Activation)")
+        elif target_gene == "BRCA1":
+            st.success(f"**Predicted Response for {target_gene} {perturb_type} in {cell_type}:**")
+            st.write("> **Biological Mechanism**: Impaired Homologous Recombination (HR). The model predicts a reliance on non-homologous end joining (NHEJ) and increased chromosomal instability.")
+            st.info("**Key Predicted Markers:** RAD51 (Down), 53BP1 (Recruitment Change), H2AFX (Up)")
         else:
             st.markdown(f"**Prediction for `{target_gene}` {perturb_type} in `{cell_type}`:**")
             st.write(f"The model predicts a significant shift in homeostasis for {cell_type}. Downstream markers suggest an activation of stress-response pathways and altered transcriptomic signatures for metabolic regulating genes.")

@@ -48,34 +48,44 @@ def mock_lora_config():
         return "LoraConfig(r=16, lora_alpha=32, target_modules=['q_proj', 'v_proj'], lora_dropout=0.05, task_type='CAUSAL_LM') (mocked, peft not installed)"
 
 def create_variant_prompt(mave_row):
-    """Encodes a MAVE variant effect into a prompt."""
+    """Encodes a MAVE variant effect into a prompt with compositional reasoning."""
+    reasoning_map = {
+        "TP53": "This mutation typically disrupts the DNA-binding domain, leading to a loss of transcriptional activation of p21, thereby bypassing G1 cell-cycle arrest.",
+        "PTEN": "The variant likely destabilizes the phosphatase domain, causing a sustained activation of the PI3K/AKT signaling pathway and downstream metabolic shifts.",
+        "BRCA1": "This substitution in the RING domain disrupts E3 ubiquitin ligase activity, compromising the cell's ability to repair double-strand DNA breaks via homologous recombination."
+    }
+    
+    gene = mave_row['gene']
+    reasoning = reasoning_map.get(gene, "This mutation disrupts protein stability and alters the downstream transcriptomic signature.")
+    
     prompt = {
-        "instruction": f"Predict the functional impact of the {mave_row['variant']} variant in gene {mave_row['gene']}.",
-        "context": f"Assay: {mave_row['assay']}. Detected functional score: {mave_row['functional_score']}.",
-        "response": f"The variant {mave_row['variant']} is interpreted as {mave_row['interpretation']}. This mutation typically disrupts DNA-binding stability, leading to a loss-of-function phenotype."
+        "instruction": f"Predict the functional impact and transcriptional consequence of the {mave_row['variant']} variant in gene {gene}.",
+        "context": f"Assay: {mave_row['assay']}. Functional Score: {mave_row['functional_score']}.",
+        "response": f"The variant {mave_row['variant']} is {mave_row['interpretation']}. {reasoning}"
     }
     return prompt
 
 def main():
     import os
-    print("--- [Perturbation-Aware LLM] Multimodal Prompt Generator ---")
+    print("--- [Compositional PAL-LLM] Multimodal Prompt Generator ---")
     
     # 1. Handle Single-Cell (scPerturb-seq)
     if os.path.exists("sample_perturb.h5ad"):
-        print("\n[Loading scRNA-seq Multimodal Input...]")
+        print("\n[Loading scRNA-seq Component...]")
         prompt = create_perturbation_prompt("sample_perturb.h5ad")
-        print(f"Cell-to-Sentence Prompt: {prompt['instruction'][:50]}...")
+        print(f"Cell-to-Sentence: {prompt['instruction'][:50]}...")
     
-    # 2. Handle Variant-Effect (MAVE / CRISPR)
+    # 2. Handle Variant-Effect (MAVE / DNA-Level)
     if os.path.exists("mock_mave_data.csv"):
-        print("\n[Loading MAVE Variant-Effect Input...]")
+        print("\n[Loading MAVE/Variant Component...]")
         mave_df = pd.read_csv("mock_mave_data.csv")
-        sample_row = mave_df.iloc[0]
+        # Show one sample of compositional mapping
+        sample_row = mave_df.iloc[0] # Usually TP53
         variant_prompt = create_variant_prompt(sample_row)
-        print(f"Variant-to-Sentence Prompt: {variant_prompt['instruction']}")
-        print(f"Response: {variant_prompt['response'][:100]}...")
+        print(f"Composed Prompt: {variant_prompt['instruction']}")
+        print(f"Biological Reasoning: {variant_prompt['response']}")
 
-    print("\n[MOCK] PEFT Configuration for Multimodal Fine-Tuning:")
+    print("\n[MOCK] PEFT Adapter Configuration (Compositional Modules):")
     print(mock_lora_config())
 
 if __name__ == "__main__":
