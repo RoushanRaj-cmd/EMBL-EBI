@@ -3,6 +3,12 @@ import pandas as pd
 import numpy as np
 from anndata import AnnData
 
+# FORCE legacy string storage to avoid ArrowStringArray serialization issues in AnnData
+try:
+    pd.options.mode.string_storage = "python"
+except:
+    pass
+
 def generate_mock_h5ad(filename="sample_perturb.h5ad"):
     # Create mock data
     n_obs = 100
