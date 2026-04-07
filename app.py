@@ -99,13 +99,32 @@ if navigation == "Dashboard Overview":
     
     with tab1:
         if os.path.exists("sample_perturb.h5ad"):
-            adata = sc.read_h5ad("sample_perturb.h5ad")
-            st.write(f"**Total Cells:** {adata.n_obs}")
-            st.write(f"**Total Genes:** {adata.n_vars}")
-            st.write("**Conditions:**", ", ".join(adata.obs['condition'].unique()))
-            st.write("**Cell Types:**", ", ".join(adata.obs['cell_type'].unique()))
+            try:
+                adata = sc.read_h5ad("sample_perturb.h5ad")
+                st.write(f"**Total Cells:** {adata.n_obs}")
+                st.write(f"**Total Genes:** {adata.n_vars}")
+                
+                # Robustly extract metadata with fallbacks
+                obs_cols = adata.obs.columns.tolist()
+                
+                # Handling 'condition'
+                if 'condition' in obs_cols:
+                    st.write("**Conditions:**", ", ".join(adata.obs['condition'].unique()))
+                elif 'perturbation' in obs_cols:
+                    st.write("**Conditions (mapped):**", ", ".join(adata.obs['perturbation'].unique()))
+                else:
+                    st.warning(f"Metadata column 'condition' not found. Available: {', '.join(obs_cols)}")
+                
+                # Handling 'cell_type'
+                if 'cell_type' in obs_cols:
+                    st.write("**Cell Types:**", ", ".join(adata.obs['cell_type'].unique()))
+                else:
+                    st.warning("Metadata column 'cell_type' not found.")
+                    
+            except Exception as e:
+                st.error(f"Error reading dataset: {str(e)}")
         else:
-            st.error("Mock dataset (sample_perturb.h5ad) not found.")
+            st.error("Mock dataset (sample_perturb.h5ad) not found. Try clicking 'Run Prediction' to trigger data generation.")
 
     with tab2:
         if os.path.exists("mock_mave_data.csv"):
