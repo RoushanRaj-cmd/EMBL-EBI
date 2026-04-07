@@ -17,15 +17,25 @@ def bootstrap(force=False):
     integrity_failed = False
     if os.path.exists("sample_perturb.h5ad"):
         try:
-            temp_adata = sc.read_h5ad("sample_perturb.h5ad", backed='r')
-            if 'condition' not in temp_adata.obs.columns:
+            # Check if file is non-empty
+            if os.path.getsize("sample_perturb.h5ad") == 0:
                 integrity_failed = True
-        except:
+            else:
+                temp_adata = sc.read_h5ad("sample_perturb.h5ad", backed='r')
+                if 'condition' not in temp_adata.obs.columns:
+                    integrity_failed = True
+        except Exception as e:
+            st.warning(f"Existing file corrupted: {str(e)}")
             integrity_failed = True
 
     if not os.path.exists("sample_perturb.h5ad") or integrity_failed or force:
         st.info("Generating/Fixing mock biological data...")
-        subprocess.run([py_exec, "generate_mock_data.py"])
+        if os.path.exists("sample_perturb.h5ad"):
+            os.remove("sample_perturb.h5ad")
+        
+        result = subprocess.run([py_exec, "generate_mock_data.py"], capture_output=True, text=True)
+        if result.returncode != 0:
+            st.error(f"Error generating mock data: {result.stderr}")
         
     if not os.path.exists("mock_mave_data.csv") or force:
         st.info("Generating/Fixing multimodal MAVE data...")
@@ -34,7 +44,9 @@ def bootstrap(force=False):
     if not os.path.exists("graphs_and_images/umap_perturbations.png") or force:
         st.info("Updating visualizations...")
         os.makedirs("graphs_and_images", exist_ok=True)
-        subprocess.run([py_exec, "visualize_poc.py"])
+        result = subprocess.run([py_exec, "visualize_poc.py"], capture_output=True, text=True)
+        if result.returncode != 0:
+            st.error(f"Error generating visualizations: {result.stderr}")
 
 bootstrap()
 
