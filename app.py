@@ -9,18 +9,30 @@ import sys
 
 # --- SELF-BOOTSTRAPPING ---
 # Ensure mock data and images exist for Streamlit Cloud deployment
-@st.cache_resource
-def bootstrap():
+def bootstrap(force=False):
     # Streamlit Cloud uses 'python' or sys.executable
     py_exec = sys.executable
-    if not os.path.exists("sample_perturb.h5ad"):
-        st.info("Bootstrapping mock biological data...")
+    
+    # Check for file existence or if column integrity is missing
+    integrity_failed = False
+    if os.path.exists("sample_perturb.h5ad"):
+        try:
+            temp_adata = sc.read_h5ad("sample_perturb.h5ad", backed='r')
+            if 'condition' not in temp_adata.obs.columns:
+                integrity_failed = True
+        except:
+            integrity_failed = True
+
+    if not os.path.exists("sample_perturb.h5ad") or integrity_failed or force:
+        st.info("Generating/Fixing mock biological data...")
         subprocess.run([py_exec, "generate_mock_data.py"])
-    if not os.path.exists("mock_mave_data.csv"):
-        st.info("Bootstrapping multimodal MAVE data...")
+        
+    if not os.path.exists("mock_mave_data.csv") or force:
+        st.info("Generating/Fixing multimodal MAVE data...")
         subprocess.run([py_exec, "generate_mave_data.py"])
-    if not os.path.exists("graphs_and_images/umap_perturbations.png"):
-        st.info("Generating premium visualizations...")
+        
+    if not os.path.exists("graphs_and_images/umap_perturbations.png") or force:
+        st.info("Updating visualizations...")
         os.makedirs("graphs_and_images", exist_ok=True)
         subprocess.run([py_exec, "visualize_poc.py"])
 
@@ -66,6 +78,11 @@ with st.sidebar:
     
     st.divider()
     st.info("This is a Proof of Concept (PoC) demonstrating how LLMs can act as a knowledge-integration layer for causal perturbation data.")
+    
+    if st.button("🛠️ Force Regenerate Data"):
+        bootstrap(force=True)
+        st.success("Data regenerated!")
+        st.rerun()
 
 # --- DASHBOARD OVERVIEW ---
 if navigation == "Dashboard Overview":
@@ -113,7 +130,9 @@ if navigation == "Dashboard Overview":
                 elif 'perturbation' in obs_cols:
                     st.write("**Conditions (mapped):**", ", ".join(adata.obs['perturbation'].unique()))
                 else:
-                    st.warning(f"Metadata column 'condition' not found. Available: {', '.join(obs_cols)}")
+                    st.warning(f"Metadata column 'condition' not found. Available metadata: {obs_cols if obs_cols else 'None'}")
+                    if not obs_cols:
+                        st.info("The index of the metadata table is: " + str(adata.obs.index.name))
                 
                 # Handling 'cell_type'
                 if 'cell_type' in obs_cols:
