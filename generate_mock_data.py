@@ -17,8 +17,12 @@ def generate_mock_h5ad(filename="sample_perturb.h5ad"):
         'cell_type': pd.Categorical(np.random.choice(['T-Cell', 'B-Cell', 'Macrophage'], n_obs))
     }, index=[f'cell_{i}' for i in range(n_obs)])
     
+    # Force index to be object type (avoids ArrowStringArray issues in newer Pandas/AnnData)
+    obs.index = obs.index.astype(object)
+    
     # Mock variable annotations (genes)
     var = pd.DataFrame(index=[f'gene_{i}' for i in range(n_vars)])
+    var.index = var.index.astype(object)
     
     # Create AnnData object
     adata = AnnData(X=X, obs=obs, var=var)
