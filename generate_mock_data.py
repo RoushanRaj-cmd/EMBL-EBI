@@ -1,7 +1,14 @@
 import scanpy as sc
 import pandas as pd
 import numpy as np
+import anndata
 from anndata import AnnData
+
+# Opt-in to newer string types as requested by the error handler
+try:
+    anndata.settings.allow_write_nullable_strings = True
+except:
+    pass
 
 # FORCE legacy string storage to avoid ArrowStringArray serialization issues in AnnData
 try:
